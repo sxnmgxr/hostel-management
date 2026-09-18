@@ -1,69 +1,156 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { apiGet } from '@/lib/api'
+import { StatCard } from '@/components/ui/StatCard'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { FeeTrendChart } from '@/components/charts/FeeTrendChart'
+import { OccupancyChart } from '@/components/charts/OccupancyChart'
+import { Users, DoorOpen, Receipt, Shirt, Phone, ArrowRight, Bell, SlidersHorizontal } from 'lucide-react'
+
+type Stats = {
+  totalStudents: number
+  totalRooms: number
+  unpaidFeesCount: number
+  unpaidFeesTotal: number
+  pendingLaundryCount: number
+  pendingFollowUps: number
+  feeTrend: { month: string; collected: number; pending: number }[]
+  occupancy: { room: string; capacity: number; occupied: number }[]
+  recentActivity: { type: string; date: string; studentName: string; description: string }[]
+}
+
+const activityIcons: Record<string, any> = {
+  fee: Receipt,
+  laundry: Shirt,
+  call: Phone,
+}
+
+const quickActions = [
+  { href: '/students', label: 'Manage Students' },
+  { href: '/fees', label: 'Review Unpaid Fees' },
+  { href: '/laundry', label: 'Track Laundry' },
+  { href: '/calls', label: 'Log a Parent Call' },
+]
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null)
+
+  useEffect(() => {
+    apiGet('/api/dashboard').then(setStats)
+  }, [])
+
+  const overviewStats = [
+    { label: 'Active Students', value: stats?.totalStudents ?? '—', icon: Users },
+    { label: 'Total Rooms', value: stats?.totalRooms ?? '—', icon: DoorOpen },
+    { label: 'Unpaid Fees', value: stats ? `Rs. ${stats.unpaidFeesTotal}` : '—', icon: Receipt, tone: 'danger' as const },
+    { label: 'Pending Laundry', value: stats?.pendingLaundryCount ?? '—', icon: Shirt, tone: 'warning' as const },
+    { label: 'Follow-ups Due', value: stats?.pendingFollowUps ?? '—', icon: Phone, tone: 'warning' as const },
+  ]
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-6">
+      <header className="rounded-[24px] border border-slate-200 bg-white/80 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.04)] backdrop-blur-sm">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-blue-600">Operations overview</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.06em] text-slate-900">Dashboard</h1>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter
+            </button>
+            <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+              <Bell className="h-4 w-4" />
+              Updates
+            </button>
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+              Updated today
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </header>
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-5">
+        {overviewStats.map((item) => (
+          <StatCard key={item.label} label={item.label} value={item.value} icon={item.icon} tone={item.tone} />
+        ))}
+      </section>
+
+      <section className="grid grid-cols-1 gap-5 2xl:grid-cols-[1.8fr_1fr]">
+        <Card className="h-full overflow-hidden">
+          <CardHeader title="Fee Collection — Last 6 Months" />
+          <div className="flex h-[calc(100%-73px)] items-center p-5">
+            {stats && stats.feeTrend.length > 0 ? (
+              <div className="h-[280px] w-full">
+                <FeeTrendChart data={stats.feeTrend} />
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">No fee data yet.</p>
+            )}
+          </div>
+        </Card>
+
+        <Card className="h-full overflow-hidden">
+          <CardHeader title="Room Occupancy" />
+          <div className="flex h-[calc(100%-73px)] items-center justify-center p-5">
+            {stats && stats.occupancy.length > 0 ? (
+              <div className="h-[280px] w-full">
+                <OccupancyChart data={stats.occupancy} />
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">No rooms added yet.</p>
+            )}
+          </div>
+        </Card>
+      </section>
+
+      <section className="grid grid-cols-1 gap-5 2xl:grid-cols-[1.8fr_1fr]">
+        <Card className="overflow-hidden">
+          <CardHeader title="Recent Activity" />
+          {!stats || stats.recentActivity.length === 0 ? (
+            <p className="p-6 text-sm text-slate-500">No activity yet.</p>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {stats.recentActivity.map((a, i) => {
+                const Icon = activityIcons[a.type] || Receipt
+                return (
+                  <div key={i} className="flex items-start gap-3 px-5 py-3.5">
+                    <div className="mt-0.5 rounded-xl bg-slate-100 p-2 text-slate-600">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-900">
+                        <span className="font-semibold">{a.studentName}</span> — {a.description}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">{new Date(a.date).toLocaleString()}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardHeader title="Quick Actions" />
+          <div className="flex flex-col gap-2.5 p-4">
+            {quickActions.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3 transition-all hover:border-blue-200 hover:bg-blue-50"
+              >
+                <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:text-blue-700" />
+              </Link>
+            ))}
+          </div>
+        </Card>
+      </section>
     </div>
-  );
+  )
 }

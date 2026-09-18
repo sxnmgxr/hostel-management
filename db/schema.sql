@@ -1,0 +1,69 @@
+CREATE TABLE IF NOT EXISTS call_logs (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  called_by VARCHAR(255) NOT NULL,
+  call_date TIMESTAMP DEFAULT NOW(),
+  purpose VARCHAR(50) NOT NULL,
+  outcome VARCHAR(50) NOT NULL,
+  notes TEXT,
+  follow_up_needed BOOLEAN DEFAULT FALSE,
+  follow_up_date DATE
+);
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS rooms (
+  id SERIAL PRIMARY KEY,
+  number VARCHAR(50) UNIQUE NOT NULL,
+  capacity INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS students (
+  id SERIAL PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  guardian_name VARCHAR(255) NOT NULL,
+  guardian_phone VARCHAR(50) NOT NULL,
+  admission_date TIMESTAMP DEFAULT NOW(),
+  active BOOLEAN DEFAULT TRUE,
+  room_id INTEGER REFERENCES rooms(id),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS fees (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  month VARCHAR(20) NOT NULL,
+  amount NUMERIC(10, 2) NOT NULL,
+  paid BOOLEAN DEFAULT FALSE,
+  paid_date TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS laundry (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  item_count INTEGER NOT NULL,
+  date_sent TIMESTAMP DEFAULT NOW(),
+  returned BOOLEAN DEFAULT FALSE,
+  return_date TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'admin'
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL UNIQUE REFERENCES students(id) ON DELETE CASCADE,
+  status VARCHAR(50) NOT NULL,
+  notes TEXT,
+  check_in TIMESTAMP,
+  check_out TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT NOW()
+);
