@@ -3,19 +3,24 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useEffect } from 'react'
 import {
   BarChart3,
   Bell,
   BedDouble,
   CalendarDays,
   CreditCard,
+  MessageSquare,
+  Receipt,
   FileText,
+  GraduationCap,
   Home,
   Menu,
   Search,
   Settings,
   Shirt,
   UserCheck,
+  Users,
   X,
 } from 'lucide-react'
 
@@ -24,15 +29,46 @@ const links = [
   { href: '/students', label: 'Students', icon: Home },
   { href: '/rooms', label: 'Rooms', icon: BedDouble },
   { href: '/fees', label: 'Fees', icon: CreditCard },
+  { href: '/expenses', label: 'Expenses', icon: Receipt },
+  { href: '/communications', label: 'Communications', icon: MessageSquare },
   { href: '/laundry', label: 'Laundry', icon: Shirt },
   { href: '/calls', label: 'Call Logs', icon: FileText },
   { href: '/calendar', label: 'Calendar', icon: CalendarDays },
   { href: '/attendance', label: 'Attendance', icon: UserCheck },
+  { href: '/academic', label: 'Academic Records', icon: GraduationCap },
+  { href: '/users', label: 'Users & Access', icon: Users, adminOnly: true },
 ]
+
+const staffPermissions: Record<string, string> = {
+  '/': 'dashboard',
+  '/attendance': 'attendance',
+  '/laundry': 'laundry',
+  '/calls': 'calls',
+  '/expenses': 'expenses',
+  '/communications': 'communications',
+  '/calendar': 'calendar',
+}
 
 export function Sidebar() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [role, setRole] = useState<string>('admin')
+  const [permissions, setPermissions] = useState<string[]>([])
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((response) => response.json())
+      .then((data) => {
+        setRole(data.user?.role || 'admin')
+        setPermissions(data.user?.permissions || [])
+      })
+      .catch(() => setRole('admin'))
+  }, [])
+
+  const visibleLinks = links.filter((link) => {
+    if ('adminOnly' in link && link.adminOnly && role !== 'admin') return false
+    return role === 'staff' ? Boolean(staffPermissions[link.href] && permissions.includes(staffPermissions[link.href])) : role === 'parent' ? false : true
+  })
 
   const navContent = (
     <>
@@ -43,7 +79,7 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-slate-900">Believers Hostel</h1>
-            <p className="text-xs text-slate-500">Admin Console</p>
+            <p className="text-xs text-slate-500">{role === 'staff' ? 'Staff Console' : 'Admin Console'}</p>
           </div>
         </div>
 
@@ -60,7 +96,7 @@ export function Sidebar() {
       <div className="px-4 py-5">
         <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">Overview</div>
         <nav className="space-y-1.5">
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const Icon = link.icon
             const active = pathname === link.href
 

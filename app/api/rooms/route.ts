@@ -5,6 +5,7 @@ import { z } from 'zod'
 const roomSchema = z.object({
   number: z.string().min(1),
   capacity: z.number().min(1),
+  roomType: z.string().min(1).default('Standard'),
 })
 
 export async function GET() {
@@ -25,10 +26,10 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
-  const { number, capacity } = parsed.data
+  const { number, capacity, roomType } = parsed.data
   const result = await pool.query(
-    'INSERT INTO rooms (number, capacity) VALUES ($1, $2) RETURNING *',
-    [number, capacity]
+    'INSERT INTO rooms (number, capacity, room_type) VALUES ($1, $2, $3) RETURNING *',
+    [number, capacity, roomType]
   )
   return NextResponse.json(result.rows[0], { status: 201 })
 }

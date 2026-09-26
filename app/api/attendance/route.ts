@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
+import { getSession } from '@/lib/session'
 import { z } from 'zod'
 
 const attendanceSchema = z.object({
@@ -9,12 +10,15 @@ const attendanceSchema = z.object({
 })
 
 export async function GET() {
+  const session = await getSession()
+  const parentFilter = session?.role === 'parent' ? 'WHERE a.student_id = $1' : ''
   const result = await pool.query(`
     SELECT a.*, s.full_name
     FROM attendance a
     JOIN students s ON s.id = a.student_id
+    ${parentFilter}
     ORDER BY a.updated_at DESC
-  `)
+  `, session?.role === 'parent' ? [session.studentId] : [])
 
   return NextResponse.json(result.rows)
 }

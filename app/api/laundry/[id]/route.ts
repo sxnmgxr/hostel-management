@@ -11,5 +11,6 @@ export async function PUT(
     `UPDATE laundry SET returned = $1, return_date = $2 WHERE id = $3 RETURNING *`,
     [body.returned, body.returned ? new Date() : null, id]
   )
+  if (result.rows.length === 0) return NextResponse.json({ error: 'Laundry record not found' }, { status: 404 })
   return NextResponse.json(result.rows[0])
 }

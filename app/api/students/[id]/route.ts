@@ -6,7 +6,13 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params
-  const student = await pool.query('SELECT * FROM students WHERE id = $1', [id])
+  const student = await pool.query(
+    `SELECT s.*, r.number AS room_number
+     FROM students s
+     LEFT JOIN rooms r ON s.room_id = r.id
+     WHERE s.id = $1`,
+    [id]
+  )
   if (student.rows.length === 0) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
@@ -38,6 +44,7 @@ export async function PUT(
      WHERE id = $6 RETURNING *`,
     [fullName, guardianName, guardianPhone, roomId, active, id]
   )
+  if (result.rows.length === 0) return NextResponse.json({ error: 'Student not found' }, { status: 404 })
   return NextResponse.json(result.rows[0])
 }
 
@@ -46,6 +53,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params
-  await pool.query('DELETE FROM students WHERE id = $1', [id])
+  const result = await pool.query('DELETE FROM students WHERE id = $1', [id])
+  if (result.rowCount === 0) return NextResponse.json({ error: 'Student not found' }, { status: 404 })
   return NextResponse.json({ success: true })
 }

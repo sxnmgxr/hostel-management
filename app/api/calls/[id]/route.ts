@@ -6,6 +6,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params
-  await pool.query('DELETE FROM call_logs WHERE id = $1', [id])
+  const result = await pool.query('DELETE FROM call_logs WHERE id = $1', [id])
+  if (result.rowCount === 0) return NextResponse.json({ error: 'Call record not found' }, { status: 404 })
   return NextResponse.json({ success: true })
 }

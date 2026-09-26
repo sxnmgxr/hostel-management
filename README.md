@@ -16,6 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+To enable persistent admin calendar events, run the calendar migration once:
+
+```bash
+npm run db:migrate:calendar
+```
+
+To enable academic records for examinations and units, run:
+
+```bash
+npm run db:migrate:academic
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
@@ -24,10 +36,12 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+### User roles
+
+The default seed creates an admin account. Optional staff and parent accounts can be created with the same script by setting `STAFF_EMAIL`, `STAFF_PASSWORD`, `PARENT_EMAIL`, `PARENT_PASSWORD`, and `PARENT_STUDENT_ID` before running `npx tsx scripts/seed-admin.ts`. Staff can use attendance, laundry, calls, and calendar. Parents have read-only access to the linked student's fees and attendance.
 
 ## Deploy on Vercel
 
