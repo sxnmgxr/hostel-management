@@ -1,19 +1,3 @@
-CREATE TABLE IF NOT EXISTS call_logs (
-  id SERIAL PRIMARY KEY,
-  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-  called_by VARCHAR(255) NOT NULL,
-  call_date TIMESTAMP DEFAULT NOW(),
-  purpose VARCHAR(50) NOT NULL,
-  outcome VARCHAR(50) NOT NULL,
-  notes TEXT,
-  follow_up_needed BOOLEAN DEFAULT FALSE,
-  follow_up_date DATE
-);
-
-
-
-
-
 CREATE TABLE IF NOT EXISTS rooms (
   id SERIAL PRIMARY KEY,
   number VARCHAR(50) UNIQUE NOT NULL,
@@ -30,6 +14,18 @@ CREATE TABLE IF NOT EXISTS students (
   active BOOLEAN DEFAULT TRUE,
   room_id INTEGER REFERENCES rooms(id),
   created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS call_logs (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  called_by VARCHAR(255) NOT NULL,
+  call_date TIMESTAMP DEFAULT NOW(),
+  purpose VARCHAR(50) NOT NULL,
+  outcome VARCHAR(50) NOT NULL,
+  notes TEXT,
+  follow_up_needed BOOLEAN DEFAULT FALSE,
+  follow_up_date DATE
 );
 
 CREATE TABLE IF NOT EXISTS fees (
